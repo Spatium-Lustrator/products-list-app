@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">ProductList</string>
+    <string name="signIn">ВХОД</string>
+    <string name="signOut">ВЫХОД</string>
+    <string name="groups">ГРУППЫ</string>
+    <string name="email">Почта</string>
+    <string name="password">Пароль</string>
+    <string name="enterGroupName">Имя группы</string>
+    <string name="joinGroup">ВОЙТИ В ГРУППУ</string>
+    <string name="notLoggedYet">ВЫ ЕЩЕ НЕ ВОШЛИ!</string>
+
+    <string name="groupNameMustNotBeEmpty">Укажите имя группы!</string>
+    <string name="youMustBeLogged">Пожалуйста, войдите в свой аккаунт!</string>
+
+</resources>
