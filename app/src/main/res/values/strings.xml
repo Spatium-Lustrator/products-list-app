@@ -8,6 +8,9 @@
     <string name="enterGroupName">Имя группы</string>
     <string name="joinGroup">ВОЙТИ В ГРУППУ</string>
     <string name="notLoggedYet">ВЫ ЕЩЕ НЕ ВОШЛИ!</string>
+    <string name="enterProductName">Название продукта</string>
+    <string name="add">ДОБАВИТЬ</string>
+    <string name="successful">Успешно!</string>
 
     <string name="groupNameMustNotBeEmpty">Укажите имя группы!</string>
     <string name="youMustBeLogged">Пожалуйста, войдите в свой аккаунт!</string>

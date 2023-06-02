@@ -23,15 +23,13 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="24dp"
-        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/includedLayoutBottomToolbarMainActivity"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/flabAddProduct" />
 
     <TextView
         android:id="@+id/tvMainActivityLogin"
@@ -40,10 +38,40 @@
         android:gravity="center_horizontal"
         android:text="@string/notLoggedYet"
         android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/mainActivityRecyclerView"
+        app:layout_constraintBottom_toTopOf="@+id/flabAddProduct"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/flabAddProduct"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:onClick="onClickAddProduct"
+        app:backgroundTint="@color/green"
+        app:layout_constraintBottom_toTopOf="@+id/includedLayoutBottomToolbarMainActivity"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/mainActivityRecyclerView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.100000024"
+        app:srcCompat="@drawable/baseline_add_56" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/flabThisWasBought"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:onClick="onClickDeleteProducts"
+        app:backgroundTint="@color/green"
+        app:layout_constraintBottom_toTopOf="@+id/includedLayoutBottomToolbarMainActivity"
+        app:layout_constraintEnd_toEndOf="@+id/mainActivityRecyclerView"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.100000024"
+        app:srcCompat="@drawable/baseline_task_alt_56" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

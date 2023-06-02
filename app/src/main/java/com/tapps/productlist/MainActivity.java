@@ -2,10 +2,12 @@ package com.tapps.productlist;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -22,12 +24,16 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.SignInMethodQueryResult;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class MainActivity extends AppCompatActivity {
 
-    // Views
+    /** Views **/
     RecyclerView recyclerViewProducts;
     View bottomToolbar;
     ImageButton ibtnToolbarSignIn;
@@ -37,13 +43,19 @@ public class MainActivity extends AppCompatActivity {
     EditText etDialogEmail;
     EditText etDialogPassword;
     EditText etDialogGroupsGroupName;
+    EditText etProductName;
 
     TextView tvLogin;
 
-    // Variables
+    /** Variables **/
+    RecyclerViewAdapter recyclerViewAdapter;
+    ArrayList<String> listProducts = new ArrayList<String>();
     Context context = this;
     Dialog dialogSignInSignUp;
     Dialog dialogGroups;
+    Dialog dialogAddProduct;
+    private SharedPreferences settings;
+    private String usersGroupName;
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
 
@@ -60,33 +72,69 @@ public class MainActivity extends AppCompatActivity {
         ibtnToolbarGroups = bottomToolbar.findViewById(R.id.ibtnToolbarGroups);
 
         tvLogin = findViewById(R.id.tvMainActivityLogin);
+        /** Initialize variables **/
+        settings = getSharedPreferences(Consts.APP_PREFERENCES, Context.MODE_PRIVATE);
+
+        dialogSignInSignUp = new Dialog(this);
+        dialogGroups = new Dialog(this);
+        dialogAddProduct = new Dialog(this);
+
+        usersGroupName = settings.getString(Consts.APP_PREFERENCES_GROUP_NAME, "");
+
+        recyclerViewAdapter = new RecyclerViewAdapter(context, listProducts);
 
 
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        dialogSignInSignUp = new Dialog(this);
-        dialogGroups = new Dialog(this);
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            updateUI(getString(R.string.notLoggedYet));
+        } else {
+            updateUI(currentUser.getEmail());
+        }
 
+        /** Ini functions **/
         setClickListeners();
+        recyclerViewProducts.setLayoutManager(new LinearLayoutManager(context));
+        recyclerViewProducts.setAdapter(recyclerViewAdapter);
     }
 
     /** OnClicks **/
+    public void onClickDeleteProducts(View view) {
+        //TODO
+    }
+    public void onClickConfirmAddingProduct(View view){
+        String productName = String.valueOf(etProductName.getText());
+        listProducts.add(productName);
+        recyclerViewAdapter.notifyDataSetChanged();
+        // Edit data in firebase
+        mDatabase.child("Groups").child(usersGroupName).setValue(String.join(";", listProducts));
+        Toast.makeText(context, getString(R.string.successful), Toast.LENGTH_SHORT).show();
+        dialogAddProduct.dismiss();
+    }
+    public void onClickAddProduct(View view) {
+        dialogAddProduct.setContentView(R.layout.add_product_dialog);
+        etProductName = dialogAddProduct.findViewById(R.id.etDialogAddProductProductName);
+        dialogAddProduct.show();
+
+    }
     public void onClickJoinGroup(View view) {
         // Edit data in firebase
         String groupName = String.valueOf(etDialogGroupsGroupName.getText());
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        Log.i("USERETAG", "USER: " + String.valueOf(currentUser));
         if (TextUtils.isEmpty(groupName)) {
             Toast.makeText(context, getString(R.string.groupNameMustNotBeEmpty), Toast.LENGTH_LONG).show();
         } else if (currentUser == null) {
-            Log.i("USERTAG", "currentUser is null");
             Toast.makeText(context, getString(R.string.youMustBeLogged), Toast.LENGTH_SHORT).show();
         } else {
-            //mDatabase.child("Users").child(currentUser.getUid()).setValue(groupName);
-            mDatabase.child("Users").child("testUser").setValue(";skldjf;aslkdf");
+            mDatabase.child("Users").child(currentUser.getUid()).setValue(groupName);
         }
+
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(Consts.APP_PREFERENCES_GROUP_NAME, groupName);
+        editor.apply();
 
         dialogGroups.dismiss();
 
@@ -109,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                         signInToFirebase(email, password);
                     }
 
-                    tvLogin.setText(email);
+                    updateUI(email);
 
                 }
             }).addOnFailureListener(new OnFailureListener() {
@@ -142,7 +190,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 mAuth.getInstance().signOut();
-                tvLogin.setText(getText(R.string.notLoggedYet));
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString(Consts.APP_PREFERENCES_GROUP_NAME, "");
+                editor.apply();
+                updateUI(getString(R.string.notLoggedYet));
             }
         });
 
@@ -152,17 +203,47 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 dialogGroups.setContentView(R.layout.groups_dialog);
                 etDialogGroupsGroupName = dialogGroups.findViewById(R.id.etDialogGroupsGroupName);
+                dialogGroups.setCancelable(false);
                 dialogGroups.show();
 
             }
         });
 
-
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        Log.i("USERTAG", "User: " + String.valueOf(currentUser));
-
+    }
+    /** get data **/
+    private void getProductsFromFirebase(String groupName) {
+        mDatabase.child("Groups").child(groupName).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.e("firebase", "Error getting data", task.getException());
+                }
+                else {
+                    Log.d("firebase", String.valueOf(task.getResult().getValue()));
+                    String[] list = String.valueOf(task.getResult().getValue()).split(";");
+                    listProducts.addAll(Arrays.asList(list));
+                    recyclerViewAdapter.notifyDataSetChanged();
+                }
+            }
+        });
     }
 
+    private void getUserGroupFromFirebase(String userUID) {
+        mDatabase.child("Users").child(mAuth.getCurrentUser().getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.e("firebase", "Error getting data", task.getException());
+                }
+                else {
+                    Log.d("firebase", String.valueOf(task.getResult().getValue()));
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString(Consts.APP_PREFERENCES_GROUP_NAME, String.valueOf(task.getResult().getValue()));
+                    editor.apply();
+                }
+            }
+        });
+    }
     /** auth functions **/
     private void createFirebaseUser(String email, String password) {
 
@@ -174,13 +255,18 @@ public class MainActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("TAG", "createUserWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
+                            mDatabase.child("Users").child(user.getUid()).setValue("");
+                            dialogGroups.setContentView(R.layout.groups_dialog);
+                            etDialogGroupsGroupName = dialogGroups.findViewById(R.id.etDialogGroupsGroupName);
+                            dialogGroups.setCancelable(false);
+                            dialogGroups.show();
+                            updateUI(user.getEmail());
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("TAG", "createUserWithEmail:failure", task.getException());
                             Toast.makeText(MainActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
-                            updateUI(null);
+                            updateUI(getString(R.string.notLoggedYet));
                         }
                     }
                 });
@@ -196,13 +282,14 @@ public class MainActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("TAG", "signInWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
+                            updateUI(user.getEmail());
+                            getUserGroupFromFirebase(user.getUid());
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("TAG", "signInWithEmail:failure", task.getException());
                             Toast.makeText(MainActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
-                            updateUI(null);
+                            updateUI(getString(R.string.notLoggedYet));
                         }
                     }
                 });
@@ -221,5 +308,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void reload() {}
 
-    private void updateUI(FirebaseUser user) {}
+    private void updateUI(String textForLoginTextView) {
+        tvLogin.setText(textForLoginTextView);
+    }
 }
