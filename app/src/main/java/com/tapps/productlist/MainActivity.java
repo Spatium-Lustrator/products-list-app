@@ -25,13 +25,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.SignInMethodQueryResult;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements onCheckBoxClick {
 
     /** Views **/
     RecyclerView recyclerViewProducts;
@@ -48,14 +50,14 @@ public class MainActivity extends AppCompatActivity {
     TextView tvLogin;
 
     /** Variables **/
-    RecyclerViewAdapter recyclerViewAdapter;
     ArrayList<String> listProducts = new ArrayList<String>();
+    RecyclerViewAdapter recyclerViewAdapter;
     Context context = this;
     Dialog dialogSignInSignUp;
     Dialog dialogGroups;
     Dialog dialogAddProduct;
     private SharedPreferences settings;
-    private String usersGroupName;
+    private ArrayList<String> nowSelectedItems = new ArrayList<String>();
     private FirebaseAuth mAuth;
     private DatabaseReference mDatabase;
 
@@ -79,9 +81,9 @@ public class MainActivity extends AppCompatActivity {
         dialogGroups = new Dialog(this);
         dialogAddProduct = new Dialog(this);
 
-        usersGroupName = settings.getString(Consts.APP_PREFERENCES_GROUP_NAME, "");
+        //usersGroupName = settings.getString(Consts.APP_PREFERENCES_GROUP_NAME, "");
+        recyclerViewAdapter = new RecyclerViewAdapter(this, listProducts, this);
 
-        recyclerViewAdapter = new RecyclerViewAdapter(context, listProducts);
 
 
         // Initialize Firebase Auth
@@ -93,6 +95,8 @@ public class MainActivity extends AppCompatActivity {
             updateUI(getString(R.string.notLoggedYet));
         } else {
             updateUI(currentUser.getEmail());
+            getUserGroupFromFirebase(currentUser.getUid());
+            //getProductsFromFirebase(usersGroupName);
         }
 
         /** Ini functions **/
@@ -100,19 +104,80 @@ public class MainActivity extends AppCompatActivity {
         recyclerViewProducts.setLayoutManager(new LinearLayoutManager(context));
         recyclerViewProducts.setAdapter(recyclerViewAdapter);
     }
+    /** Implementations **/
+    // For checkbox click
+    @Override
+    public void onClick(ArrayList<String> selectedItems) {
+        Log.i("DEVELOP-DELETING", "MAIN ACTIVITY: " + String.valueOf(selectedItems));
+        nowSelectedItems = selectedItems;
+    }
 
     /** OnClicks **/
+    public void onClickReload(View view){
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            getUserGroupFromFirebase(currentUser.getUid());
+        } else {
+            Toast.makeText(context, getString(R.string.notLoggedYet), Toast.LENGTH_SHORT).show();
+        }
+    }
     public void onClickDeleteProducts(View view) {
-        //TODO
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (Integer index = 0; index < nowSelectedItems.size(); index++) {
+                    listProducts.remove(nowSelectedItems.get(index));
+                }
+
+                mDatabase.child("Users").child(mAuth.getCurrentUser().getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DataSnapshot> task) {
+                        if (!task.isSuccessful()) {
+                            Log.e("firebase", "Error getting data", task.getException());
+                        }
+                        else {
+                            Log.i("GETPRODUCTSDAMN", "Group gotten");
+                            mDatabase
+                                    .child("Groups")
+                                    .child(String.valueOf(task.getResult().getValue()))
+                                    .setValue(String.join(";", listProducts));
+                            //Log.d("firebase", String.valueOf(task.getResult().getValue()));
+                            //g//etProductsFromFirebase(String.valueOf(task.getResult().getValue()));
+                            onClickReload(findViewById(R.id.floabReload));
+                        }
+                    }
+                });
+
+            }
+        }).start();
     }
     public void onClickConfirmAddingProduct(View view){
         String productName = String.valueOf(etProductName.getText());
         listProducts.add(productName);
         recyclerViewAdapter.notifyDataSetChanged();
         // Edit data in firebase
-        mDatabase.child("Groups").child(usersGroupName).setValue(String.join(";", listProducts));
-        Toast.makeText(context, getString(R.string.successful), Toast.LENGTH_SHORT).show();
-        dialogAddProduct.dismiss();
+        // TODO: This is a crutch
+        mDatabase.child("Users").child(mAuth.getCurrentUser().getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (!task.isSuccessful()) {
+                    Log.e("firebase", "Error getting data", task.getException());
+                }
+                else {
+                    Log.i("GETPRODUCTSDAMN", "Group gotten");
+                    Log.d("firebase", String.valueOf(task.getResult().getValue()));
+                    String products = String.join(";", listProducts);
+                    if (products.startsWith(";")) {
+                        products = products.substring(1);
+                    }
+                    mDatabase.child("Groups").child(String.valueOf(task.getResult().getValue())).setValue(products);
+                    Toast.makeText(context, getString(R.string.successful), Toast.LENGTH_SHORT).show();
+                    dialogAddProduct.dismiss();
+                }
+            }
+        });
+
+
     }
     public void onClickAddProduct(View view) {
         dialogAddProduct.setContentView(R.layout.add_product_dialog);
@@ -131,6 +196,22 @@ public class MainActivity extends AppCompatActivity {
         } else {
             mDatabase.child("Users").child(currentUser.getUid()).setValue(groupName);
         }
+
+        DatabaseReference groupsRef = FirebaseDatabase.getInstance().getReference().child("Groups");
+        groupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.hasChild(groupName)) {
+                    groupsRef.child(groupName).setValue("");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
 
         SharedPreferences.Editor editor = settings.edit();
         editor.putString(Consts.APP_PREFERENCES_GROUP_NAME, groupName);
@@ -212,6 +293,7 @@ public class MainActivity extends AppCompatActivity {
     }
     /** get data **/
     private void getProductsFromFirebase(String groupName) {
+        listProducts.clear();
         mDatabase.child("Groups").child(groupName).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -219,9 +301,11 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("firebase", "Error getting data", task.getException());
                 }
                 else {
+                    Log.i("GETPRODUCTSDAMN", "GetPROUDECT~!~!~");
                     Log.d("firebase", String.valueOf(task.getResult().getValue()));
                     String[] list = String.valueOf(task.getResult().getValue()).split(";");
                     listProducts.addAll(Arrays.asList(list));
+                    listProducts.remove("");
                     recyclerViewAdapter.notifyDataSetChanged();
                 }
             }
@@ -236,10 +320,9 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("firebase", "Error getting data", task.getException());
                 }
                 else {
+                    Log.i("GETPRODUCTSDAMN", "Group gotten");
                     Log.d("firebase", String.valueOf(task.getResult().getValue()));
-                    SharedPreferences.Editor editor = settings.edit();
-                    editor.putString(Consts.APP_PREFERENCES_GROUP_NAME, String.valueOf(task.getResult().getValue()));
-                    editor.apply();
+                    getProductsFromFirebase(String.valueOf(task.getResult().getValue()));
                 }
             }
         });
@@ -283,7 +366,6 @@ public class MainActivity extends AppCompatActivity {
                             Log.d("TAG", "signInWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
                             updateUI(user.getEmail());
-                            getUserGroupFromFirebase(user.getUid());
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("TAG", "signInWithEmail:failure", task.getException());
@@ -311,4 +393,6 @@ public class MainActivity extends AppCompatActivity {
     private void updateUI(String textForLoginTextView) {
         tvLogin.setText(textForLoginTextView);
     }
+
+
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ProductList</string>
+    <string name="app_name">СПИСОКЪ</string>
     <string name="signIn">ВХОД</string>
     <string name="signOut">ВЫХОД</string>
     <string name="groups">ГРУППЫ</string>
