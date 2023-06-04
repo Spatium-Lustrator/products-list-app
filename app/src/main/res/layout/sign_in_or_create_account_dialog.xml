@@ -43,6 +43,7 @@
         android:fontFamily="@font/baloo_cyrillic"
         android:onClick="onClickSignUp"
         android:text="@string/signIn"
+        android:textColor="@color/white"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/etDialogPassword"

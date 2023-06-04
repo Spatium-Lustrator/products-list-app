@@ -81,6 +81,9 @@ public class MainActivity extends AppCompatActivity implements onCheckBoxClick {
         dialogGroups = new Dialog(this);
         dialogAddProduct = new Dialog(this);
 
+        dialogGroups.setCancelable(false);
+        dialogSignInSignUp.setCancelable(false);
+
         //usersGroupName = settings.getString(Consts.APP_PREFERENCES_GROUP_NAME, "");
         recyclerViewAdapter = new RecyclerViewAdapter(this, listProducts, this);
 
@@ -195,29 +198,31 @@ public class MainActivity extends AppCompatActivity implements onCheckBoxClick {
             Toast.makeText(context, getString(R.string.youMustBeLogged), Toast.LENGTH_SHORT).show();
         } else {
             mDatabase.child("Users").child(currentUser.getUid()).setValue(groupName);
+            DatabaseReference groupsRef = FirebaseDatabase.getInstance().getReference().child("Groups");
+            groupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (!snapshot.hasChild(groupName)) {
+                        groupsRef.child(groupName).setValue("");
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+            dialogGroups.dismiss();
         }
 
-        DatabaseReference groupsRef = FirebaseDatabase.getInstance().getReference().child("Groups");
-        groupsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (!snapshot.hasChild(groupName)) {
-                    groupsRef.child(groupName).setValue("");
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
 
 
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString(Consts.APP_PREFERENCES_GROUP_NAME, groupName);
-        editor.apply();
 
-        dialogGroups.dismiss();
+        //SharedPreferences.Editor editor = settings.edit();
+        //editor.putString(Consts.APP_PREFERENCES_GROUP_NAME, groupName);
+        //editor.apply();
+
+
 
     }
     public void onClickSignUp(View view) {

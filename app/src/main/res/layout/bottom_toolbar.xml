@@ -14,7 +14,7 @@
         android:fontFamily="@font/baloo_cyrillic"
         android:gravity="center_horizontal"
         android:text="@string/groups"
-        android:textColor="#A2D230"
+        android:textColor="?attr/colorPrimary"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/ibtnToolbarGroups"
@@ -34,64 +34,72 @@
 
     <ImageButton
         android:id="@+id/ibtnToolbarGroups"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginTop="8dp"
         android:background="#00FFFFFF"
+        android:scaleType="fitXY"
+        android:tint="?attr/colorPrimary"
         app:layout_constraintEnd_toEndOf="@+id/bottomToolbarDivider"
         app:layout_constraintStart_toStartOf="@+id/bottomToolbarDivider"
         app:layout_constraintTop_toBottomOf="@+id/bottomToolbarDivider"
-        app:srcCompat="@drawable/baseline_groups_56" />
+        app:srcCompat="@drawable/baseline_groups_56"
+        tools:ignore="UseAppTint" />
 
     <ImageButton
         android:id="@+id/ibtnToolbarSignIn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:background="#00FFFFFF"
+        android:scaleType="fitXY"
+        android:tint="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="@+id/ibtnToolbarGroups"
         app:layout_constraintEnd_toStartOf="@+id/ibtnToolbarGroups"
         app:layout_constraintHorizontal_bias="0.524"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/ibtnToolbarGroups"
         app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/baseline_login_56" />
+        app:srcCompat="@drawable/baseline_login_56"
+        tools:ignore="UseAppTint" />
 
     <ImageButton
         android:id="@+id/ibtnToolbarSignOut"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:background="#00FFFFFF"
+        android:scaleType="fitXY"
+        android:tint="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="@+id/ibtnToolbarGroups"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/ibtnToolbarGroups"
         app:layout_constraintTop_toTopOf="@+id/ibtnToolbarGroups"
         app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/baseline_logout_56" />
+        app:srcCompat="@drawable/baseline_logout_56"
+        tools:ignore="UseAppTint" />
 
     <TextView
         android:id="@+id/tvToolbarSignIn"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:fontFamily="@font/baloo_cyrillic"
         android:gravity="center_horizontal"
         android:text="@string/signIn"
-        android:textColor="#A2D230"
+        android:textColor="?attr/colorPrimary"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="@+id/ibtnToolbarSignIn"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/ibtnToolbarSignIn"
         app:layout_constraintTop_toBottomOf="@+id/ibtnToolbarSignIn" />
 
     <TextView
         android:id="@+id/tvToolbarSignOut"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:fontFamily="@font/baloo_cyrillic"
         android:gravity="center_horizontal"
         android:text="@string/signOut"
-        android:textColor="#A2D230"
+        android:textColor="?attr/colorPrimary"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="@+id/ibtnToolbarSignOut"
         app:layout_constraintStart_toStartOf="@+id/ibtnToolbarSignOut"
