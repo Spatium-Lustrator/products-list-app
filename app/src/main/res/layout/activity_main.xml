@@ -6,42 +6,33 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <include
-        android:id="@+id/includedLayoutBottomToolbarMainActivity"
-        layout="@layout/bottom_toolbar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/mainActivityRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="32dp"
         android:layout_marginEnd="24dp"
-        app:layout_constraintBottom_toTopOf="@+id/includedLayoutBottomToolbarMainActivity"
+        android:layout_marginBottom="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/flabAddProduct" />
+        app:layout_constraintTop_toBottomOf="@+id/floabReload" />
 
     <TextView
         android:id="@+id/tvMainActivityLogin"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:gravity="center_horizontal"
         android:text="@string/notLoggedYet"
         android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/flabAddProduct"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/flabAddProduct"
@@ -49,15 +40,15 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         android:onClick="onClickAddProduct"
-        app:tint="@color/black"
         app:backgroundTint="?attr/colorPrimary"
-        app:layout_constraintBottom_toTopOf="@+id/includedLayoutBottomToolbarMainActivity"
+        app:layout_constraintBottom_toBottomOf="@+id/floabReload"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/mainActivityRecyclerView"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.100000024"
-        app:srcCompat="@drawable/baseline_add_56" />
+        app:layout_constraintTop_toBottomOf="@+id/tvMainActivityLogin"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@drawable/baseline_add_56"
+        app:tint="@color/black" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/flabThisWasBought"
@@ -66,28 +57,48 @@
         android:clickable="true"
         android:onClick="onClickDeleteProducts"
         app:backgroundTint="?attr/colorPrimary"
-        app:tint="@color/black"
-        app:layout_constraintBottom_toTopOf="@+id/includedLayoutBottomToolbarMainActivity"
+        app:layout_constraintBottom_toBottomOf="@+id/floabReload"
         app:layout_constraintEnd_toEndOf="@+id/mainActivityRecyclerView"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.100000024"
-        app:srcCompat="@drawable/baseline_task_alt_56" />
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@drawable/baseline_task_alt_56"
+        app:tint="@color/black" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floabReload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:clickable="true"
         android:onClick="onClickReload"
-        app:tint="@color/black"
         app:backgroundTint="?attr/colorPrimary"
-        app:layout_constraintBottom_toTopOf="@+id/mainActivityRecyclerView"
-        app:layout_constraintEnd_toStartOf="@+id/flabThisWasBought"
-        app:layout_constraintStart_toEndOf="@+id/flabAddProduct"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/tvMainActivityLogin"
+        app:layout_constraintStart_toStartOf="@+id/tvMainActivityLogin"
         app:layout_constraintTop_toBottomOf="@+id/tvMainActivityLogin"
-        app:srcCompat="@drawable/baseline_autorenew_56" />
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/baseline_autorenew_56"
+        app:tint="@color/black" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floabMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        android:clickable="true"
+        android:onClick="onClickMenu"
+        app:backgroundTint="?attr/colorPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@drawable/baseline_menu_56"
+        app:tint="@color/black" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

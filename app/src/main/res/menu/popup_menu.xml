@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/popupMenuMainGroup">
+        <item
+            android:id="@+id/popupMenuAddOftenProduct"
+            android:title="@string/addOftenProduct"
+        />
+        <item
+            android:id="@+id/popupMenuJoinGroup"
+            android:title="@string/joinGroup"
+        />
+        <item
+            android:id="@+id/popupMenuSignIn"
+            android:title="@string/signIn"
+        />
+        <item
+            android:id="@+id/popupMenuSignOut"
+            android:title="@string/signOut"
+        />
+
+    </group>
+
+</menu>

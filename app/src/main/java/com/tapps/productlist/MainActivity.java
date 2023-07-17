@@ -5,15 +5,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,14 +37,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity implements onCheckBoxClick {
+public class MainActivity extends AppCompatActivity implements onCheckBoxClick,  onOftenProductClick {
 
     /** Views **/
     RecyclerView recyclerViewProducts;
-    View bottomToolbar;
-    ImageButton ibtnToolbarSignIn;
-    ImageButton ibtnToolbarSignOut;
-    ImageButton ibtnToolbarGroups;
+    RecyclerView recyclerViewOftenProducts;
 
     EditText etDialogEmail;
     EditText etDialogPassword;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements onCheckBoxClick {
 
     /** Variables **/
     ArrayList<String> listProducts = new ArrayList<String>();
+    ArrayList<String> listOftenProducts = new ArrayList<String>();
     RecyclerViewAdapter recyclerViewAdapter;
     Context context = this;
     Dialog dialogSignInSignUp;
@@ -67,11 +69,6 @@ public class MainActivity extends AppCompatActivity implements onCheckBoxClick {
         setContentView(R.layout.activity_main);
 
         recyclerViewProducts = findViewById(R.id.mainActivityRecyclerView);
-        bottomToolbar = findViewById(R.id.includedLayoutBottomToolbarMainActivity);
-
-        ibtnToolbarSignIn = bottomToolbar.findViewById(R.id.ibtnToolbarSignIn);
-        ibtnToolbarSignOut = bottomToolbar.findViewById(R.id.ibtnToolbarSignOut);
-        ibtnToolbarGroups = bottomToolbar.findViewById(R.id.ibtnToolbarGroups);
 
         tvLogin = findViewById(R.id.tvMainActivityLogin);
         /** Initialize variables **/
@@ -103,11 +100,15 @@ public class MainActivity extends AppCompatActivity implements onCheckBoxClick {
         }
 
         /** Ini functions **/
-        setClickListeners();
         recyclerViewProducts.setLayoutManager(new LinearLayoutManager(context));
         recyclerViewProducts.setAdapter(recyclerViewAdapter);
     }
     /** Implementations **/
+    @Override
+    public void onClickOften(String pressedItem) {
+        etProductName.setText(pressedItem);
+        Log.i("D:LFKJ", "ONCLICKOFTEN");
+    }
     // For checkbox click
     @Override
     public void onClick(ArrayList<String> selectedItems) {
@@ -116,6 +117,48 @@ public class MainActivity extends AppCompatActivity implements onCheckBoxClick {
     }
 
     /** OnClicks **/
+    public void onClickMenu(View view) {
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        popupMenu.inflate(R.menu.popup_menu);
+
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+
+                if (getString(R.string.addOftenProduct).equals(String.valueOf(menuItem))) {
+                    Intent startOftenProductActivityIntent = new Intent(MainActivity.this, OftenProductsActivity.class);
+                    startActivity(startOftenProductActivityIntent);
+
+
+                } else if (getString(R.string.joinGroup).equals(String.valueOf(menuItem))) {
+
+                    dialogGroups.setContentView(R.layout.groups_dialog);
+                    etDialogGroupsGroupName = dialogGroups.findViewById(R.id.etDialogGroupsGroupName);
+                    dialogGroups.setCancelable(false);
+                    dialogGroups.show();
+
+                } else if (getString(R.string.signIn).equals(String.valueOf(menuItem))) {
+
+                    dialogSignInSignUp.setContentView(R.layout.sign_in_or_create_account_dialog);
+                    etDialogEmail = dialogSignInSignUp.findViewById(R.id.etDialogEmail);
+                    etDialogPassword = dialogSignInSignUp.findViewById(R.id.etDialogPassword);
+                    dialogSignInSignUp.show();
+
+                } else if (getString(R.string.signOut).equals(String.valueOf(menuItem))) {
+
+                    mAuth.getInstance().signOut();
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString(Consts.APP_PREFERENCES_GROUP_NAME, "");
+                    editor.apply();
+                    updateUI(getString(R.string.notLoggedYet));
+                }
+
+                return false;
+            }
+        });
+
+        popupMenu.show();
+    }
     public void onClickReload(View view){
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
@@ -183,8 +226,20 @@ public class MainActivity extends AppCompatActivity implements onCheckBoxClick {
 
     }
     public void onClickAddProduct(View view) {
+        listOftenProducts.clear();
+
         dialogAddProduct.setContentView(R.layout.add_product_dialog);
         etProductName = dialogAddProduct.findViewById(R.id.etDialogAddProductProductName);
+        recyclerViewOftenProducts = dialogAddProduct.findViewById(R.id.rvAddProductDialogOftenProducts);
+
+        String[] list = settings.getString(Consts.APP_PREFERENCES_OFTEN_PRODUCTS, "").split(";");
+        listOftenProducts.addAll(Arrays.asList(list));
+        listOftenProducts.remove("");
+
+        recyclerViewOftenProducts.setLayoutManager(new LinearLayoutManager(context));
+        RecyclerViewOftenProductsAdapter recyclerViewOftenProductsAdapter = new RecyclerViewOftenProductsAdapter(context, listOftenProducts, this);
+        recyclerViewOftenProducts.setAdapter(recyclerViewOftenProductsAdapter);
+
         dialogAddProduct.show();
 
     }
@@ -257,45 +312,6 @@ public class MainActivity extends AppCompatActivity implements onCheckBoxClick {
 
     }
 
-    private void setClickListeners() {
-
-        // Sign IN or sign Up
-        ibtnToolbarSignIn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialogSignInSignUp.setContentView(R.layout.sign_in_or_create_account_dialog);
-                etDialogEmail = dialogSignInSignUp.findViewById(R.id.etDialogEmail);
-                etDialogPassword = dialogSignInSignUp.findViewById(R.id.etDialogPassword);
-                dialogSignInSignUp.show();
-
-            }
-        });
-
-        //Sign OUT
-        ibtnToolbarSignOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mAuth.getInstance().signOut();
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString(Consts.APP_PREFERENCES_GROUP_NAME, "");
-                editor.apply();
-                updateUI(getString(R.string.notLoggedYet));
-            }
-        });
-
-        // Groups
-        ibtnToolbarGroups.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialogGroups.setContentView(R.layout.groups_dialog);
-                etDialogGroupsGroupName = dialogGroups.findViewById(R.id.etDialogGroupsGroupName);
-                dialogGroups.setCancelable(false);
-                dialogGroups.show();
-
-            }
-        });
-
-    }
     /** get data **/
     private void getProductsFromFirebase(String groupName) {
         listProducts.clear();
@@ -398,6 +414,7 @@ public class MainActivity extends AppCompatActivity implements onCheckBoxClick {
     private void updateUI(String textForLoginTextView) {
         tvLogin.setText(textForLoginTextView);
     }
+
 
 
 }
